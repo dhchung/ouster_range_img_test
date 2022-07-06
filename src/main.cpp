@@ -21,9 +21,10 @@
 
 #include <cv_bridge/cv_bridge.h>
 
-#define RESOLUTION 1024
+#define RESOLUTION 2048
 
-size_t px_offset[64] = {18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 19, 12, 6, 0, 19, 13, 6, 0};
+size_t px_offset_1024[64] = {18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 18, 12, 6, 0, 19, 12, 6, 0, 19, 13, 6, 0};
+size_t px_offset_2048[64] = {37, 24, 12, 0, 37, 24, 12, 0, 37, 24, 12, 0, 37, 25, 12, 1, 36, 25, 13, 1, 37, 25, 13, 1, 37, 25, 13, 1, 37, 25, 13, 1, 37, 25, 13, 1, 37, 25, 13, 1, 37, 25, 13, 1, 37, 25, 13, 2, 38, 26, 14, 2, 38, 26, 14, 2, 38, 26, 14, 1, 38, 26, 14, 1};
 
 struct EIGEN_ALIGN16 OusterPoint {
     PCL_ADD_POINT4D;
@@ -82,7 +83,12 @@ void OnSubscribeLiDARPointCloud(const sensor_msgs::PointCloud2::ConstPtr &msg)
 
     for (size_t u = 0; u < H; u++) {
         for (size_t v = 0; v < W; v++) {
-            const size_t vv = (v + W - px_offset[u]) % W;
+            size_t vv;
+            if(RESOLUTION == 1024) {
+                vv = (v + W - px_offset_1024[u]) % W;
+            } else if(RESOLUTION == 2048) {
+                vv = (v + W - px_offset_2048[u]) % W;
+            }
             const size_t index = u * W + vv;
             const auto& pt = cloud[index];
 
