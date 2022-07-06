@@ -55,28 +55,9 @@ using Cloud = pcl::PointCloud<OusterPoint>;
 void OnSubscribeLiDARPointCloud(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
     pcl::PointCloud<OusterPoint> cloud{};
-
-    // pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_pc(new pcl::PointCloud<pcl::PointXYZI>);
-    // pcl::fromROSMsg((*msg), *pcl_pc);
     pcl::fromROSMsg(*msg, cloud);
 
     cv::Mat range_img(64, RESOLUTION, CV_8UC1, cv::Scalar(0));
-
-    // for(int i = 0; i < 64; ++i) {
-    //     int start_id = i*RESOLUTION;
-    //     int end_id = (i+1)*RESOLUTION - 1;
-
-    //     for(int j = start_id; j < end_id; ++j) {
-    //         OusterPoint point_now(cloud.points[j]);
-
-    //         // float range = std::sqrt(point_now.x * point_now.x + point_now.y * point_now.y + point_now.z * point_now.z);
-    //         float range = point_now.range;
-    //         range = range/200.0;
-    //         int color = 255 - int(std::min(double(range), 255.0));
-    //         range_img.at<uint8_t>(i, j-start_id) = uint8_t(color);
-
-    //     }
-    // }
 
     size_t H = 64;
     size_t W = RESOLUTION;
