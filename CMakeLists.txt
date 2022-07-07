@@ -36,3 +36,10 @@ target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
 )
+
+add_executable(${PROJECT_NAME}_node_32 src/ouster32.cpp)
+
+target_link_libraries(${PROJECT_NAME}_node_32
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+)

@@ -62,6 +62,52 @@ void OnSubscribeLiDARPointCloud(const sensor_msgs::PointCloud2::ConstPtr &msg)
     size_t H = 64;
     size_t W = RESOLUTION;
 
+
+    std::vector<int> offset(H, -1);
+    for(int u = 0; u < H; ++u) {
+        for(int v =0; v < W; ++v) {
+            int index = u*W + v;
+            const auto & pt = cloud[index];
+            if(pt.range != 0) {
+                float angle = atan2(pt.y, pt.x)*180.0/M_PI;
+                float ang_int_f = (angle)/(360.0 / 2048.0);
+                int ang_int = 0;
+                if(ang_int_f < 0) {
+                    ang_int = int(ang_int_f) - 1;
+                } else {
+                    ang_int = int(ang_int_f);
+                }
+                ang_int = 1041 - ang_int;
+
+                // std::cout<<"Row: "<<u<<" Column: "<<v<<std::endl;
+                // std::cout<<"Angle: "<<angle<< " Angle to integer: "<<ang_int<<std::endl;
+                // std::cout<<"Previous: " <<offset[u]<<" Current: "<<ang_int - v + 2<< " Given: "<<int(px_offset_2048[u])<<std::endl;
+                // std::cout<<"-------------------------------\n"<<std::endl;
+
+                if(offset[u]!= -1) {
+                    if(offset[u]!= ang_int - v + 2) {
+                        // std::cout<<"[Shit] Previous: " <<offset[u]<<" Current: "<<ang_int - v + 2<< " Given: "<<int(px_offset_2048[u])<<std::endl;
+                        // std::cout<<"+++++++++++++++++\n"<<std::endl;
+                        offset[u] = ang_int - v + 2;
+                    }
+                }
+
+                if(int(px_offset_2048[u]) != ang_int - v + 2) {
+                    // std::cout<<"DIFFERENCE!!!"<<std::endl;
+                    // std::cout<<"Row: "<<u<<" Column: "<<v<<std::endl;
+                    // std::cout<<"Angle: "<<angle<< " Angle to integer: "<<ang_int<<std::endl;
+                    // std::cout<<"Previous: " <<offset[u]<<" Current: "<<ang_int - v + 2<< " Given: "<<int(px_offset_2048[u])<<std::endl;
+                    // std::cout<<"-------------------------------\n"<<std::endl;
+                }
+                offset[u] = ang_int - v + 2;
+
+            }
+        }
+    }
+
+
+
+
     for (size_t u = 0; u < H; u++) {
         for (size_t v = 0; v < W; v++) {
             size_t vv;
@@ -70,16 +116,51 @@ void OnSubscribeLiDARPointCloud(const sensor_msgs::PointCloud2::ConstPtr &msg)
             } else if(RESOLUTION == 2048) {
                 vv = (v + W - px_offset_2048[u]) % W;
             }
+            
+            vv = (v + W - offset[u]) % W;
+
+            // vv = (v + W - px_offset_2048[u]) % W;
             const size_t index = u * W + vv;
             const auto& pt = cloud[index];
+
+
+
 
             if (pt.range == 0) {
                 range_img.at<uint8_t>(u, v) = uint8_t(0);
             } else {
                 range_img.at<uint8_t>(u, v) = 255 - std::min(std::round(pt.range * 1/200.0), static_cast<double>(255));
+                float angle = atan2(pt.y, pt.x)*180.0/M_PI;
+                float ang_int_f = (angle)/(360.0/2048.0);
+                int ang_int = 0;
+                if(ang_int_f < 0) {
+                    ang_int = int(ang_int_f) - 1;
+                } else {
+                    ang_int = int(ang_int_f);
+                }
+                // std::cout<<"Shit: "<<int(vv)<<" Fuck: "<<ang_int<<std::endl;
             }
         }
     }
+
+    // cv::Mat index_img(64, RESOLUTION, CV_32F, cv::Scalar(0));
+    // for(int u = 0; u < 64 ; ++u) {
+
+
+    //     for(int v = 0; v < RESOLUTION; ++v) {
+    //         int index = u*RESOLUTION + v;
+    //         int ring = int(cloud[index].ring);
+
+    //         float angle = atan2(cloud[u*RESOLUTION + v].y, cloud[u*RESOLUTION + v].x)*180.0/M_PI;
+    //         // std::cout<<"X: "<< cloud[u*RESOLUTION + v].x<< " Y: "<< cloud[u*RESOLUTION + v].y<< " U: "<<u<<" : "<<angle<<std::endl;
+
+    //         if(cloud[index].range!=0) {
+    //             int ang_int = (angle)/(360.0/2048.0);
+    //             std::cout<<"Shit: "<<int((v + W - px_offset_2048[u]) % W) <<" Fuck: "<<ang_int<<std::endl;
+    //         }
+
+    //     }
+    // }
 
 
     cv::imshow("Shit", range_img);
